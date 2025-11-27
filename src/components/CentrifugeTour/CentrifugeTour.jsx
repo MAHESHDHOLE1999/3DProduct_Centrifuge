@@ -570,8 +570,8 @@
 //     rendererRef.current = renderer;
 
 //     // Lighting
-//     // const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
-//     const ambientLight = new THREE.AmbientLight(0xFB923C, 3);
+//     const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+//     // const ambientLight = new THREE.AmbientLight(0xFB923C, 3);
 //     scene.add(ambientLight);
 
 //     const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -593,17 +593,17 @@
 //     // Load model with proper GLTFLoader
 //     const loadModel = async () => {
 //       try {
-//             const dracoLoader = new DRACOLoader();
-//             dracoLoader.setDecoderPath('/draco/'); // make sure /public/draco exists
+//             // const dracoLoader = new DRACOLoader();
+//             // dracoLoader.setDecoderPath('/draco/'); // make sure /public/draco exists
 
 //             const loader = new GLTFLoader();
-//             loader.setDRACOLoader(dracoLoader);
-//             loader.setMeshoptDecoder(MeshoptDecoder);
+//             // loader.setDRACOLoader(dracoLoader);
+//             // loader.setMeshoptDecoder(MeshoptDecoder);
 
 //         // Wrap loader.load inside a Promise so we can await it with try/catch
 //         const model = await new Promise((resolve, reject) => {
 //           loader.load(
-//             "/models/product_draco.glb", // MUST be absolute path from public/
+//             "/models/BBRUnit.glb", // MUST be absolute path from public/
 //             (gltf) => resolve(gltf.scene),
 //             undefined,
 //             (err) => reject(err)
@@ -652,7 +652,7 @@
 //         setModelLoaded(true);
 //         setLoadError(null);
 //         console.log("🚀 Model Loaded Successfully");
-//         dracoLoader.dispose();
+//         // dracoLoader.dispose();
 //       } catch (error) {
 //         console.error("❌ Model Load Failed:", error);
 //         setLoadError("Model could not load — fallback object applied.");
@@ -1476,7 +1476,8 @@ export default function CentrifugeTour() {
   const containerRef = useRef(null);
 
   const [isAutoRotate, setIsAutoRotate] = useState(true);
-  const [zoomLevel, setZoomLevel] = useState(1);
+  // const [zoomLevel, setZoomLevel] = useState(1);
+  const zoom = useRef(1.2);
   const [expandedSpecSection, setExpandedSpecSection] = useState(null);
   const [modelLoaded, setModelLoaded] = useState(false);
 
@@ -1497,7 +1498,8 @@ export default function CentrifugeTour() {
 
     //Scene
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf5f5f5);
+    scene.background = new THREE.Color(0xF0F0F0);
+    // scene.background = new THREE.Color(0x000000);
     sceneRef.current = scene;
 
     const width = containerRef.current.clientWidth;
@@ -1515,7 +1517,8 @@ export default function CentrifugeTour() {
     rendererRef.current = renderer;
 
     /* 🌟 Lights */
-    scene.add(new THREE.AmbientLight(0xFB923C, 3));
+    // scene.add(new THREE.AmbientLight(0xFB923C, 3));
+    scene.add(new THREE.AmbientLight(0xffffff, 3));
     const dl = new THREE.DirectionalLight(0xffffff, 1.8);
     dl.position.set(10, 10, 10);
     scene.add(dl);
@@ -1524,6 +1527,7 @@ export default function CentrifugeTour() {
     const loader = new GLTFLoader();
     const draco = new DRACOLoader();
     draco.setDecoderPath("/draco/");
+    draco.setDecoderConfig({ type: "wasm" });
     loader.setDRACOLoader(draco);
     loader.setMeshoptDecoder(MeshoptDecoder);
 
@@ -1582,12 +1586,13 @@ export default function CentrifugeTour() {
     });
   }, []);
 
+  // CONTROLS
   useEffect(() => {
     if (!sceneRef.current || !rendererRef.current || !cameraRef.current) return;
 
     let frame;
     function animate() {
-      const r = 13;
+      const r = zoom.current * 13;
 
       // 🔥 working auto-rotate toggle
       if (isAutoRotate && !drag.current.isDragging) {
@@ -1634,8 +1639,8 @@ export default function CentrifugeTour() {
       const dx = x - drag.current.prev.x;
       const dy = y - drag.current.prev.y;
 
-      drag.current.rot.y += dx * 0.004;
-      drag.current.rot.x += dy * 0.004;
+      drag.current.rot.y -= dx * 0.004;
+      drag.current.rot.x -= dy * 0.004;
 
       drag.current.rot.x = Math.max(
         0.2,
@@ -1646,6 +1651,30 @@ export default function CentrifugeTour() {
 
     const end = () => (drag.current.isDragging = false);
 
+    /* Scroll zoom*/
+    canvas.addEventListener("wheel", (e)=>{
+      e.preventDefault();
+      zoom.current += e.deltaY > 0 ? 0.02 : -0.02;
+      zoom.current = THREE.MathUtils.clamp(zoom.current, 0.6, 2.5);
+    });
+
+    // Pinch zoom
+    let dist = null;
+    canvas.addEventListener("touchmove",(e)=>{
+      if(e.touches.length === 2){
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const d = Math.sqrt(dx * dx + dy * dy);
+
+        if(dist){
+          zoom.current -= (d - dist) * 0.007;
+          zoom.current = THREE.MathUtils.clamp(zoom.current, 0.6, 2.5);
+        }
+        dist = d;
+      }
+    });
+    canvas.addEventListener("touchend", ()=>(dist = null));
+
     canvas.addEventListener("mousedown", start);
     canvas.addEventListener("mousemove", move);
     canvas.addEventListener("mouseup", end);
@@ -1654,6 +1683,9 @@ export default function CentrifugeTour() {
     canvas.addEventListener("touchstart", start, { passive: true });
     canvas.addEventListener("touchmove", move, { passive: false });
     canvas.addEventListener("touchend", end);
+    
+    
+
   }, []);
 
   /* ---------------- UI — NO CHANGE ---------------- */
