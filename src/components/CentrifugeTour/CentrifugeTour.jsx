@@ -1480,7 +1480,7 @@ export default function CentrifugeTour() {
   const zoom = useRef(1.2);
   const [expandedSpecSection, setExpandedSpecSection] = useState(null);
   const [modelLoaded, setModelLoaded] = useState(false);
-
+  const [loadProgress, setLoadProgress] = useState(0);
   const sceneRef = useRef(null);
   const rendererRef = useRef(null);
   const cameraRef = useRef(null);
@@ -1541,16 +1541,24 @@ export default function CentrifugeTour() {
         const box = new THREE.Box3().setFromObject(model);
         const center = box.getCenter(new THREE.Vector3());
         model.position.sub(center);
-        model.position.set(0,-4,0);
-        
+        model.position.set(0, -4, 0);
 
         const size = box.getSize(new THREE.Vector3());
         const max = Math.max(size.x, size.y, size.z);
         model.scale.setScalar(9 / max);
 
         setModelLoaded(true);
+        setLoadProgress(100);
+        setTimeout(() => setModelLoaded(true), 250);
+        // setLoadProgress(100);
       },
-      undefined,
+      // ▶ PROGRESS TRACKING
+      (xhr) => {
+        const total = xhr.total || xhr.loaded * 3;  // Estimate if unknown
+        const percent = Math.min(100, Math.round((xhr.loaded / total) * 100));
+        setLoadProgress(percent);
+      },
+      // undefined,
       () => console.log("Failed to load")
     );
 
@@ -1652,7 +1660,7 @@ export default function CentrifugeTour() {
     const end = () => (drag.current.isDragging = false);
 
     /* Scroll zoom*/
-    canvas.addEventListener("wheel", (e)=>{
+    canvas.addEventListener("wheel", (e) => {
       e.preventDefault();
       zoom.current += e.deltaY > 0 ? 0.05 : -0.05;
       zoom.current = THREE.MathUtils.clamp(zoom.current, 0.6, 2.5);
@@ -1660,20 +1668,20 @@ export default function CentrifugeTour() {
 
     // Pinch zoom
     let dist = null;
-    canvas.addEventListener("touchmove",(e)=>{
-      if(e.touches.length === 2){
+    canvas.addEventListener("touchmove", (e) => {
+      if (e.touches.length === 2) {
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         const d = Math.sqrt(dx * dx + dy * dy);
 
-        if(dist){
+        if (dist) {
           zoom.current -= (d - dist) * 0.007;
           zoom.current = THREE.MathUtils.clamp(zoom.current, 0.6, 2.5);
         }
         dist = d;
       }
     });
-    canvas.addEventListener("touchend", ()=>(dist = null));
+    canvas.addEventListener("touchend", () => (dist = null));
 
     canvas.addEventListener("mousedown", start);
     canvas.addEventListener("mousemove", move);
@@ -1683,9 +1691,6 @@ export default function CentrifugeTour() {
     canvas.addEventListener("touchstart", start, { passive: true });
     canvas.addEventListener("touchmove", move, { passive: false });
     canvas.addEventListener("touchend", end);
-    
-    
-
   }, []);
 
   /* ---------------- UI — NO CHANGE ---------------- */
@@ -1702,10 +1707,37 @@ export default function CentrifugeTour() {
             ref={containerRef}
             className="w-full h-full cursor-grab active:cursor-grabbing"
           />
-          {!modelLoaded && (
+          {/* /* {!modelLoaded && (
             <p className="absolute inset-0 flex items-center justify-center">
               Loading...
             </p>
+          )} */}
+
+          {!modelLoaded && (
+            <div
+              className="absolute inset-0 flex flex-col items-center justify-center 
+                  bg-white bg-opacity-90 backdrop-blur-sm"
+            >
+              <div className="text-lg font-semibold text-gray-700 mb-2">
+                Loading 3D Model...
+              </div>
+
+              {/* spinner */}
+              <div
+                className="w-10 h-10 border-4 border-gray-300 border-t-blue-600 
+                   rounded-full animate-spin mb-4"
+              ></div>
+
+              {/* progress bar */}
+              {/* <div className="w-56 h-2 bg-gray-300 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-blue-600 transition-all duration-200"
+                  style={{ width: `${loadProgress}%` }}
+                ></div>
+              </div>
+
+              <p className="text-gray-600 text-sm mt-2">{loadProgress}%</p> */}
+            </div>
           )}
         </div>
 
