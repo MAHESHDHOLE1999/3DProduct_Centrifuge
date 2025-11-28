@@ -1480,7 +1480,7 @@ export default function CentrifugeTour() {
   const zoom = useRef(1.2);
   const [expandedSpecSection, setExpandedSpecSection] = useState(null);
   const [modelLoaded, setModelLoaded] = useState(false);
-  const [loadProgress, setLoadProgress] = useState(0);
+  // const [loadProgress, setLoadProgress] = useState(0);
   const sceneRef = useRef(null);
   const rendererRef = useRef(null);
   const cameraRef = useRef(null);
@@ -1548,8 +1548,8 @@ export default function CentrifugeTour() {
         model.scale.setScalar(9 / max);
 
         setModelLoaded(true);
-        setLoadProgress(100);
-        setTimeout(() => setModelLoaded(true), 250);
+        // setLoadProgress(100);
+        // setTimeout(() => setModelLoaded(true), 250);
         // setLoadProgress(100);
       },
       // ▶ PROGRESS TRACKING
