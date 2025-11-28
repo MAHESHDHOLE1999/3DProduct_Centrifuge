@@ -1553,12 +1553,12 @@ export default function CentrifugeTour() {
         // setLoadProgress(100);
       },
       // ▶ PROGRESS TRACKING
-      (xhr) => {
-        const total = xhr.total || xhr.loaded * 3;  // Estimate if unknown
-        const percent = Math.min(100, Math.round((xhr.loaded / total) * 100));
-        setLoadProgress(percent);
-      },
-      // undefined,
+      // (xhr) => {
+      //   const total = xhr.total || xhr.loaded * 3;  // Estimate if unknown
+      //   const percent = Math.min(100, Math.round((xhr.loaded / total) * 100));
+      //   setLoadProgress(percent);
+      // },
+      undefined,
       () => console.log("Failed to load")
     );
 
