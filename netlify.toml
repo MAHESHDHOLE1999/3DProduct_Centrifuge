@@ -1,0 +1,15 @@
+[[headers]]
+  for = "/models/*.glb"
+  [headers.values]
+    Content-Type = "model/gltf-binary"
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/models/*.gltf"
+  [headers.values]
+    Content-Type = "model/gltf+json"
+
+[[headers]]
+  for = "/draco/*"
+  [headers.values]
+    Content-Type = "application/octet-stream"
