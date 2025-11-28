@@ -1498,7 +1498,7 @@ export default function CentrifugeTour() {
 
     //Scene
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xF0F0F0);
+    scene.background = new THREE.Color(0x909090);
     // scene.background = new THREE.Color(0x000000);
     sceneRef.current = scene;
 
@@ -1654,7 +1654,7 @@ export default function CentrifugeTour() {
     /* Scroll zoom*/
     canvas.addEventListener("wheel", (e)=>{
       e.preventDefault();
-      zoom.current += e.deltaY > 0 ? 0.02 : -0.02;
+      zoom.current += e.deltaY > 0 ? 0.05 : -0.05;
       zoom.current = THREE.MathUtils.clamp(zoom.current, 0.6, 2.5);
     });
 
